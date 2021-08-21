@@ -53,6 +53,7 @@ export class TreatmentService {
             }
             const data = new this.TreatmentModel({doctorId:userId, appointmentId,treatment});
             const result = await data.save();
+            await this.appointmentModel.findByIdAndUpdate({_id:appointmentId},{status:"Done"});
             return result;
             //  const userId = user.id;
             // const result = (await this.TreatmentModel.find({doctorId: userId}).exec());
