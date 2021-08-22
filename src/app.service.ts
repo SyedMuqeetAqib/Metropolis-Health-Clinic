@@ -5,6 +5,7 @@ import {
   HttpStatus,
   HttpException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Error, Model } from 'mongoose';
@@ -20,7 +21,7 @@ export class AppService {
     @InjectModel('Users') private readonly UserModel: Model<UserRegister>,
     private mailService: MailService,
     private readonly JwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
   async register(user: any) {
     const { email, password, userType } = user;
@@ -33,15 +34,27 @@ export class AppService {
         const userExists = await this.UserModel.findOne({
           email: email,
         }).exec();
-        if (userExists) {
-          throw new UnauthorizedException("User already registered with this email");
+        if (userExists && userExists['status'] == true) {
+          throw new UnauthorizedException(
+            'User already registered with this email',
+          );
         }
-        const token = await this.JwtService.sign({ email: user.email });
-        await this.mailService.sendUserConfirmation(user, token);
-        const hash = await bcrypt.hash(password, 10);
-        const newUser = new this.UserModel({ email, password: hash, userType });
-        const result = await newUser.save();   
-        return result;
+        if (userExists && userExists['status'] == false) {
+          const token = await this.JwtService.sign({ email: user.email });
+          await this.mailService.sendUserConfirmation(user, token);
+          throw new ConflictException("User already exists but is not verified, please we've send token to your mail for verification");
+        } else {
+          const token = await this.JwtService.sign({ email: user.email });
+          await this.mailService.sendUserConfirmation(user, token);
+          const hash = await bcrypt.hash(password, 10);
+          const newUser = new this.UserModel({
+            email,
+            password: hash,
+            userType,
+          });
+          const result = await newUser.save();
+          return result;
+        }
       } catch (error) {
         console.log(error);
         throw new HttpException(

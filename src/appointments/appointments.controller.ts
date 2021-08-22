@@ -3,6 +3,7 @@ import { AppService } from 'src/app.service';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
+import { createAppointment } from './appointments DTO/appointments.dto';
 import { AppointmentsService } from './appointments.service';
 
 @Controller("appointment")
@@ -11,7 +12,7 @@ export class AppointmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  createAppointment(@Body() appointment, @Request() req): any {
+  createAppointment(@Body() appointment:createAppointment, @Request() req): any {
     return this.appointmentService.createAppointment(appointment, req.user);
   }
 
@@ -20,14 +21,5 @@ export class AppointmentsController {
   getAllAppointments(@Request() req){
     return this.appointmentService.allAppointments(req.user);
   }
-  @Post('user/register')
-  register(@Body() userDetails):any{
-    return userDetails
-  }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('protected')
-  getHello(@Request() req): string {
-    return req.user;
-  }
 }
