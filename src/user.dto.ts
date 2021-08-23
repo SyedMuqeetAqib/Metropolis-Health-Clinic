@@ -13,6 +13,5 @@ export class RegisterUserDto {
 }
 
 export class UsernameVerification {
-    @IsNotEmpty()
     username: string;
 }

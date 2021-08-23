@@ -12,18 +12,19 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('user/login')
-  login(@Request() req): any {
+  async login(@Request() req) {
     return this.authService.login(req.user);
   }
 
   @Post('user/register')
-  register(@Body() userDetails: RegisterUserDto):any{
+  async register(@Body() userDetails: RegisterUserDto){
     return this.appService.register(userDetails)
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('user/verify')
-  getHello(@Body("username") username:UsernameVerification,@Request() req): any {
+  async getHello(@Body("username") username:UsernameVerification,@Request() req) {
+    console.log("username is:", username)
     return this.appService.verifyUser(req.user, username);
   }
 }

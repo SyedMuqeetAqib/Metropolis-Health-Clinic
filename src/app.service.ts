@@ -41,10 +41,12 @@ export class AppService {
         }
         if (userExists && userExists['status'] == false) {
           const token = await this.JwtService.sign({ email: user.email });
+          // console.log("token is with not verified user:", token)
           await this.mailService.sendUserConfirmation(user, token);
           throw new ConflictException("User already exists but is not verified, please we've send token to your mail for verification");
         } else {
           const token = await this.JwtService.sign({ email: user.email });
+          // console.log("token is with new user:", token)
           await this.mailService.sendUserConfirmation(user, token);
           const hash = await bcrypt.hash(password, 10);
           const newUser = new this.UserModel({

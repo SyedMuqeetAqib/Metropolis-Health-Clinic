@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import {ConfigModule} from '@nestjs/config';
+import {ConfigModule, ConfigService} from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -18,11 +18,16 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [ConfigModule.forRoot({
     isGlobal: true
   }),
-    MailModule, JwtModule.register({
-    secret:'secret',
-    signOptions:{
-      expiresIn:'30m'
-    }
+    MailModule, JwtModule.registerAsync({
+        useFactory: (config: ConfigService) => {
+          return {
+            secret: config.get<string>('JWTSECRET'),
+            signOptions: {
+              expiresIn: '30m',
+            },
+          };
+        },
+        inject: [ConfigService],
   }),
     UsersModule,  MongooseModule.forRoot('mongodb+srv://12345:12345@cluster0.rnd3j.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',{ useFindAndModify: false }), AuthModule, DashboardModule, AppointmentsModule, TreatmentModule, MailModule],
   controllers: [AppController, AppointmentsController, TreatmentController, DashboardController],
